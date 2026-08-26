@@ -7,14 +7,19 @@ import typer
 from xrpl_rag.chunker import chunk_page
 from xrpl_rag.code_map.pipeline import map_codebase
 from xrpl_rag.config import RagConfig
-from xrpl_rag.docs_source import ensure_docs_repo, iter_markdown_files
+from xrpl_rag.docs_source import (
+    DEFAULT_DOC_SOURCES,
+    DocsSource,
+    ensure_docs_repo,
+    iter_document_files,
+)
 from xrpl_rag.formatting import format_context, format_search_results
-from xrpl_rag.parser import parse_markdown_file
+from xrpl_rag.parser import parse_document_file
 from xrpl_rag.retrieval import retrieve
 from xrpl_rag.store import VectorStore
 
 
-app = typer.Typer(help="Local RAG pipeline for the official XRPL docs.")
+app = typer.Typer(help="Local RAG pipeline for XRPL docs and client libraries.")
 
 
 @app.command()
@@ -28,17 +33,7 @@ def ingest(
 ):
     config = _config(docs_path)
     try:
-        repo_root = ensure_docs_repo(config.docs_path, update=update)
-        files = list(iter_markdown_files(repo_root))
-        if not files:
-            raise RuntimeError(f"No Markdown or MDX files found under {repo_root}")
-
-        chunks = []
-        for file_path in files:
-            try:
-                chunks.extend(chunk_page(parse_markdown_file(file_path, repo_root)))
-            except UnicodeDecodeError:
-                continue
+        chunks, file_count, source_count = _ingest_chunks(config, update, docs_path)
 
         if not chunks:
             raise RuntimeError("No indexable XRPL docs chunks were produced.")
@@ -48,7 +43,10 @@ def ingest(
         typer.secho(f"ingest failed: {exc}", fg=typer.colors.RED, err=True)
         raise typer.Exit(1) from exc
 
-    typer.echo(f"Indexed {len(chunks)} chunks from {len(files)} files.")
+    typer.echo(
+        f"Indexed {len(chunks)} chunks from {file_count} files across "
+        f"{source_count} sources."
+    )
     typer.echo(f"Vector DB: {config.db_path}")
 
 
@@ -141,6 +139,86 @@ def map_code(
 
 def _progress_reporter(message: str) -> None:
     typer.secho(message, fg=typer.colors.BLUE, err=True)
+
+
+def _ingest_chunks(
+    config: RagConfig, update: bool, docs_path: Path | None
+):
+    chunks = []
+    file_count = 0
+    sources = _sources_for_ingest(config, docs_path)
+
+    for source in sources:
+        repo_root = ensure_docs_repo(
+            source.path, update=update, repo_url=source.repo_url
+        )
+        files = list(
+            iter_document_files(
+                repo_root,
+                source.file_suffixes,
+                include_parts=source.include_parts,
+            )
+        )
+        if not files:
+            raise RuntimeError(f"No supported docs files found under {repo_root}")
+
+        file_count += len(files)
+        for file_path in files:
+            try:
+                page = parse_document_file(
+                    file_path,
+                    repo_root,
+                    url_base=source.url_base,
+                    source_url_base=source.source_url_base,
+                    source_name=source.name,
+                    prefix_source_path=source.prefix_source_path,
+                )
+                chunks.extend(chunk_page(page))
+            except UnicodeDecodeError:
+                continue
+
+    return chunks, file_count, len(sources)
+
+
+def _sources_for_ingest(
+    config: RagConfig, docs_path: Path | None
+) -> tuple[DocsSource, ...]:
+    if docs_path is not None:
+        return (
+            DocsSource(
+                name="xrpl-docs",
+                repo_url=DEFAULT_DOC_SOURCES[0].repo_url,
+                path=config.docs_path,
+                url_base=DEFAULT_DOC_SOURCES[0].url_base,
+                file_suffixes=DEFAULT_DOC_SOURCES[0].file_suffixes,
+                include_parts=DEFAULT_DOC_SOURCES[0].include_parts,
+            ),
+        )
+
+    sources: list[DocsSource] = []
+    for source in DEFAULT_DOC_SOURCES:
+        path = (
+            config.docs_path
+            if source.name == "xrpl-docs"
+            else _resolve_path(source.path)
+        )
+        sources.append(
+            DocsSource(
+                name=source.name,
+                repo_url=source.repo_url,
+                path=path,
+                url_base=source.url_base,
+                prefix_source_path=source.prefix_source_path,
+                file_suffixes=source.file_suffixes,
+                include_parts=source.include_parts,
+                source_url_base=source.source_url_base,
+            )
+        )
+    return tuple(sources)
+
+
+def _resolve_path(path: Path) -> Path:
+    return path if path.is_absolute() else Path.cwd() / path
 
 
 def _config(docs_path: Path | None = None) -> RagConfig:

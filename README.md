@@ -1,6 +1,8 @@
 # XRPL Docs RAG
 
-Local-first retrieval for the official XRP Ledger documentation. The CLI indexes xrpl.org source docs and prints source-cited context that you can hand to a local LLM.
+Local-first retrieval for XRP Ledger documentation. The CLI indexes xrpl.org source
+docs plus the XRPL Python and JavaScript library docs, then prints source-cited
+context that you can hand to a local LLM.
 
 ## Install
 
@@ -14,21 +16,33 @@ The first ingest downloads the local embedding model used by `sentence-transform
 
 ## Build The Index
 
-Clone or update the official XRPL docs source and build a local Chroma vector store:
+Clone or update the default XRPL documentation sources and build a local Chroma
+vector store:
 
 ```bash
 .venv/bin/xrpl-rag ingest
 ```
 
-Use an existing checkout without network updates:
+Default sources:
+
+- xrpl.org docs: `https://github.com/XRPLF/xrpl-dev-portal.git`
+- xrpl-py docs and package docstrings: `https://github.com/XRPLF/xrpl-py.git`
+- xrpl.js docs: `https://github.com/XRPLF/xrpl.js.git`
+
+Use an existing xrpl.org docs checkout without network updates:
 
 ```bash
 .venv/bin/xrpl-rag ingest --docs-path /path/to/xrpl-dev-portal --no-update
 ```
 
+Passing `--docs-path` keeps the legacy single-source behavior and indexes only that
+checkout.
+
 Defaults:
 
-- Docs checkout: `.cache/xrpl-dev-portal`
+- xrpl.org docs checkout: `.cache/xrpl-dev-portal`
+- xrpl-py checkout: `.cache/xrpl-py`
+- xrpl.js checkout: `.cache/xrpl.js`
 - Vector DB: `.rag/chroma`
 - Collection: `xrpl_docs`
 - Embedding model: `sentence-transformers/all-MiniLM-L6-v2`
@@ -73,6 +87,9 @@ export XRPL_RAG_DB_PATH=/path/to/chroma
 export XRPL_RAG_COLLECTION=xrpl_docs
 export XRPL_RAG_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
 ```
+
+`XRPL_RAG_DOCS_PATH` overrides the xrpl.org docs checkout path. The library
+checkouts default to `.cache/xrpl-py` and `.cache/xrpl.js`.
 
 ## Development
 

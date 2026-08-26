@@ -2,7 +2,12 @@ import subprocess
 
 import pytest
 
-from xrpl_rag.docs_source import ensure_docs_repo, iter_markdown_files
+from xrpl_rag.docs_source import (
+    DEFAULT_DOC_SOURCES,
+    ensure_docs_repo,
+    iter_document_files,
+    iter_markdown_files,
+)
 
 
 def test_ensure_docs_repo_uses_existing_local_path_without_git(tmp_path):
@@ -27,6 +32,55 @@ def test_iter_markdown_files_filters_common_non_docs_dirs(tmp_path):
     skip.write_text("# Dependency", encoding="utf-8")
 
     assert list(iter_markdown_files(docs_path)) == [keep]
+
+
+def test_default_doc_sources_include_xrpl_python_and_javascript_libraries():
+    assert [source.name for source in DEFAULT_DOC_SOURCES] == [
+        "xrpl-docs",
+        "xrpl-py",
+        "xrpl-js",
+    ]
+    assert [source.repo_url for source in DEFAULT_DOC_SOURCES] == [
+        "https://github.com/XRPLF/xrpl-dev-portal.git",
+        "https://github.com/XRPLF/xrpl-py.git",
+        "https://github.com/XRPLF/xrpl.js.git",
+    ]
+    assert [source.path.name for source in DEFAULT_DOC_SOURCES] == [
+        "xrpl-dev-portal",
+        "xrpl-py",
+        "xrpl.js",
+    ]
+    xrpl_py = DEFAULT_DOC_SOURCES[1]
+    assert ".py" in xrpl_py.file_suffixes
+    assert xrpl_py.include_parts == ("docs", "xrpl")
+    assert xrpl_py.source_url_base == "https://github.com/XRPLF/xrpl-py/blob/main/"
+
+
+def test_iter_document_files_includes_rst_and_html_but_skips_assets(tmp_path):
+    docs_path = tmp_path / "repo"
+    markdown = docs_path / "docs" / "concepts" / "accounts.md"
+    rst = docs_path / "docs" / "source" / "xrpl.transaction.rst"
+    html = docs_path / "docs" / "classes" / "Client.html"
+    asset = docs_path / "docs" / "assets" / "style.css"
+    node_module = docs_path / "node_modules" / "package" / "README.md"
+    for path in [markdown, rst, html, asset, node_module]:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("docs", encoding="utf-8")
+
+    assert list(iter_document_files(docs_path)) == [html, markdown, rst]
+
+
+def test_iter_document_files_can_limit_to_source_roots(tmp_path):
+    docs_path = tmp_path / "repo"
+    keep = docs_path / "xrpl" / "transaction" / "main.py"
+    skip = docs_path / "tests" / "test_transaction.py"
+    for path in [keep, skip]:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("docs", encoding="utf-8")
+
+    assert list(iter_document_files(docs_path, {".py"}, include_parts=("xrpl",))) == [
+        keep
+    ]
 
 
 def test_ensure_docs_repo_clones_missing_path(monkeypatch, tmp_path):
