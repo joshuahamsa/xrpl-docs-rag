@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xrpl-docs-rag"
+version = "0.1.0"
+description = "Local-first RAG pipeline for XRPL documentation."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "chromadb>=0.5",
+    "pyyaml>=6.0",
+    "sentence-transformers>=3.0",
+    "typer>=0.12",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+xrpl-rag = "xrpl_rag.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

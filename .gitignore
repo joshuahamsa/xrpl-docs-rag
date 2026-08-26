@@ -1,0 +1,46 @@
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+.envrc
+*.local
+
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python caches and test artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+
+# Python packaging/build outputs
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Local RAG inputs, outputs, and model/cache data
+.cache/
+.rag/
+
+# Local external source checkouts used as indexing/mapping inputs
+rippled/
