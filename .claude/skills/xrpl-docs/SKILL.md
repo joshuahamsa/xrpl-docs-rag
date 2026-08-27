@@ -1,12 +1,12 @@
 ---
 name: xrpl-docs
-description: Search the local XRPL documentation RAG index (xrpl.org docs, xrpl-py, xrpl.js). Use whenever answering questions about the XRP Ledger, XRPL transactions, accounts, amendments, or the xrpl-py/xrpl.js client libraries — before answering from memory.
+description: Search the local XRPL documentation RAG index (xrpl.org docs, xrpl-py, xrpl.js, Xaman wallet, Joey Wallet). Use whenever answering questions about the XRP Ledger, XRPL transactions, accounts, amendments, the xrpl-py/xrpl.js client libraries, or the Xaman (formerly Xumm) and Joey Wallet developer platforms — before answering from memory.
 ---
 
 # XRPL Docs RAG
 
 This repo contains a local RAG index of xrpl.org documentation plus the xrpl-py
-and xrpl.js client library docs. Always ground XRPL answers in it instead of
+and xrpl.js client library docs and the Xaman and Joey Wallet developer docs. Always ground XRPL answers in it instead of
 answering from memory.
 
 ## How to query

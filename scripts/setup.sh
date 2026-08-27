@@ -38,13 +38,13 @@ if [ "$SKILL" -eq 1 ]; then
   cat > "${SKILL_DIR}/SKILL.md" <<EOF
 ---
 name: xrpl-docs
-description: Search the local XRPL documentation RAG index (xrpl.org docs, xrpl-py, xrpl.js). Use whenever answering questions about the XRP Ledger, XRPL transactions, accounts, amendments, or the xrpl-py/xrpl.js client libraries — before answering from memory.
+description: Search the local XRPL documentation RAG index (xrpl.org docs, xrpl-py, xrpl.js, Xaman wallet, Joey Wallet). Use whenever answering questions about the XRP Ledger, XRPL transactions, accounts, amendments, the xrpl-py/xrpl.js client libraries, or the Xaman (formerly Xumm) and Joey Wallet developer platforms — before answering from memory.
 ---
 
 # XRPL Docs RAG
 
 A local RAG index of xrpl.org documentation plus the xrpl-py and xrpl.js client
-library docs lives at \`${REPO_ROOT}\`. Always ground XRPL answers in it
+library docs and the Xaman and Joey Wallet developer docs lives at \`${REPO_ROOT}\`. Always ground XRPL answers in it
 instead of answering from memory.
 
 ## How to query
