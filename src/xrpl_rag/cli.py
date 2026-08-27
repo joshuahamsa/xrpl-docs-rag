@@ -39,7 +39,11 @@ def ingest(
         if not chunks:
             raise RuntimeError("No indexable XRPL docs chunks were produced.")
 
-        VectorStore(config).upsert_chunks(chunks)
+        # Stale deletion is only safe when every default source was scanned;
+        # legacy --docs-path mode sees a single source and would wipe the rest.
+        added, removed, unchanged = VectorStore(config).sync_chunks(
+            chunks, delete_stale=docs_path is None
+        )
     except Exception as exc:
         typer.secho(f"ingest failed: {exc}", fg=typer.colors.RED, err=True)
         raise typer.Exit(1) from exc
@@ -47,6 +51,9 @@ def ingest(
     typer.echo(
         f"Indexed {len(chunks)} chunks from {file_count} files across "
         f"{source_count} sources."
+    )
+    typer.echo(
+        f"Embedded {added} new chunks; {unchanged} unchanged, {removed} removed."
     )
     typer.echo(f"Vector DB: {config.db_path}")
 

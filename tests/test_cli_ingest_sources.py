@@ -13,6 +13,10 @@ class FakeStore:
     def upsert_chunks(self, chunks):
         self.__class__.upserted_chunks = list(chunks)
 
+    def sync_chunks(self, chunks, delete_stale=True):
+        self.upsert_chunks(chunks)
+        return len(chunks), 0, 0
+
 
 def test_ingest_indexes_all_default_doc_sources(monkeypatch, tmp_path):
     roots = {}
