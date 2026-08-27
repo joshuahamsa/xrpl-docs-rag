@@ -90,3 +90,25 @@ def test_ingest_indexes_all_default_doc_sources(monkeypatch, tmp_path):
             subdir = source.include_parts[0] if source.include_parts else "guides"
             expected.add(f"{source.name}:{subdir}/{source.name}.md")
     assert {chunk.source_path for chunk in FakeStore.upserted_chunks} == expected
+
+
+def test_ingest_deduplicates_identical_chunk_ids(monkeypatch, tmp_path):
+    root = tmp_path / "docs-repo"
+    page = root / "docs" / "page.md"
+    page.parent.mkdir(parents=True)
+    # Two identical sections under identical headings chunk to identical IDs.
+    page.write_text(
+        "# Title\n\n## Section\n\nSame text.\n\n## Section\n\nSame text.\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        "xrpl_rag.cli.ensure_docs_repo", lambda path, update=True, repo_url=None: root
+    )
+    monkeypatch.setattr("xrpl_rag.cli.VectorStore", FakeStore)
+
+    result = CliRunner().invoke(app, ["ingest", "--docs-path", str(root)])
+
+    assert result.exit_code == 0
+    ids = [chunk.chunk_id for chunk in FakeStore.upserted_chunks]
+    assert len(ids) == len(set(ids))

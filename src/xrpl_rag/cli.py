@@ -186,7 +186,10 @@ def _ingest_chunks(
             except UnicodeDecodeError:
                 continue
 
-    return chunks, file_count, len(sources)
+    # Identical repeated sections within a page hash to the same chunk_id;
+    # Chroma rejects duplicate IDs in one upsert, so keep the first occurrence.
+    unique_chunks = list({chunk.chunk_id: chunk for chunk in chunks}.values())
+    return unique_chunks, file_count, len(sources)
 
 
 def _sources_for_ingest(

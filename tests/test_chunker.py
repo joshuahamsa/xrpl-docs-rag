@@ -37,3 +37,4 @@ def test_chunk_page_splits_long_sections_with_overlap():
     assert len(chunks) == 2
     assert chunks[0].text.split()[-2:] == chunks[1].text.split()[:2]
     assert chunks[0].chunk_id != chunks[1].chunk_id
+
