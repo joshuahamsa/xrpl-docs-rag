@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import subprocess
+import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
@@ -177,10 +178,19 @@ def ensure_web_docs(
     if not urls:
         raise RuntimeError(f"No markdown page URLs found in {llms_txt_url}")
 
+    fetched = 0
     for url in urls:
+        try:
+            text = _fetch_text(url)
+        except urllib.error.HTTPError as exc:
+            print(f"warning: skipping {url}: HTTP {exc.code}")
+            continue
         target = local_path_for_doc_url(url, base_url=base_url, root=path)
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(_fetch_text(url), encoding="utf-8")
+        target.write_text(text, encoding="utf-8")
+        fetched += 1
+    if fetched == 0:
+        raise RuntimeError(f"Failed to fetch any pages listed in {llms_txt_url}")
     return path
 
 

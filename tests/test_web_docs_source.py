@@ -111,3 +111,25 @@ def test_dot_directories_are_skipped(tmp_path):
         f.write_text("# Doc", encoding="utf-8")
 
     assert list(iter_document_files(tmp_path, {".md"})) == [keep]
+
+
+def test_ensure_web_docs_skips_pages_that_fail_to_fetch(monkeypatch, tmp_path):
+    import urllib.error
+
+    def fake_fetch(url):
+        if url.endswith("llms.txt"):
+            return LLMS_TXT
+        if "getting-started" in url:
+            raise urllib.error.HTTPError(url, 404, "Not Found", None, None)
+        return "# Page"
+
+    monkeypatch.setattr("xrpl_rag.docs_source._fetch_text", fake_fetch)
+
+    root = tmp_path / "joey-docs"
+    ensure_web_docs(
+        root,
+        llms_txt_url="https://docs.joeywallet.xyz/llms.txt",
+        base_url="https://docs.joeywallet.xyz/",
+    )
+    assert (root / "welcome-to-joey-wallet.md").is_file()
+    assert not (root / "overview" / "getting-started.md").exists()
