@@ -97,3 +97,17 @@ checkouts default to `.cache/xrpl-py` and `.cache/xrpl.js`.
 .venv/bin/python -m pytest -v
 .venv/bin/python -m xrpl_rag.cli --help
 ```
+
+## One-Shot Machine Setup (Claude Code integration)
+
+On a new machine (e.g. a development server):
+
+```bash
+git clone https://github.com/joshuahamsa/xrpl-docs-rag.git && cd xrpl-docs-rag
+scripts/setup.sh
+```
+
+This creates the venv, installs the package, builds the index, and installs a
+global Claude Code skill at `~/.claude/skills/xrpl-docs` pointing at this
+checkout, so any Claude Code session on the machine can query the index.
+Flags: `--no-ingest` skips the index build, `--no-skill` skips the skill install.
