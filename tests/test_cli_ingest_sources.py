@@ -23,6 +23,14 @@ def test_ingest_indexes_all_default_doc_sources(monkeypatch, tmp_path):
             page = root / "docs" / "concepts" / "accounts.md"
             page.parent.mkdir(parents=True)
             page.write_text("# Accounts\n\nXRPL account docs.", encoding="utf-8")
+        elif source.name == "xaman-docs":
+            page = root / "js-ts-sdk" / "sdk.md"
+            page.parent.mkdir(parents=True)
+            page.write_text("# Xaman SDK\n\nXaman developer docs.", encoding="utf-8")
+        elif source.name == "joey-docs":
+            page = root / "overview" / "getting-started.md"
+            page.parent.mkdir(parents=True)
+            page.write_text("# Getting Started\n\nJoey Wallet docs.", encoding="utf-8")
         elif source.name == "xrpl-py":
             page = root / "docs" / "source" / "xrpl.transaction.rst"
             page.parent.mkdir(parents=True)
@@ -41,19 +49,25 @@ def test_ingest_indexes_all_default_doc_sources(monkeypatch, tmp_path):
 
     def fake_ensure(path, update=True, repo_url=None):
         for source in DEFAULT_DOC_SOURCES:
-            if repo_url == source.repo_url:
+            if repo_url and repo_url == source.repo_url:
                 return roots[source.name]
         raise AssertionError(f"Unexpected docs source: {path}")
 
+    def fake_ensure_web(path, llms_txt_url, base_url, update=True):
+        return roots["joey-docs"]
+
     monkeypatch.setattr("xrpl_rag.cli.ensure_docs_repo", fake_ensure)
+    monkeypatch.setattr("xrpl_rag.cli.ensure_web_docs", fake_ensure_web)
     monkeypatch.setattr("xrpl_rag.cli.VectorStore", FakeStore)
 
     result = CliRunner().invoke(app, ["ingest"])
 
     assert result.exit_code == 0
-    assert "Indexed 3 chunks from 3 files across 3 sources." in result.output
+    assert "Indexed 5 chunks from 5 files across 5 sources." in result.output
     assert {chunk.source_path for chunk in FakeStore.upserted_chunks} == {
         "docs/concepts/accounts.md",
         "xrpl-py:docs/source/xrpl.transaction.rst",
         "xrpl-js:docs/classes/Client.html",
+        "xaman-docs:js-ts-sdk/sdk.md",
+        "joey-docs:overview/getting-started.md",
     }

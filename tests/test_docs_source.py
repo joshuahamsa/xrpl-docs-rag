@@ -39,16 +39,22 @@ def test_default_doc_sources_include_xrpl_python_and_javascript_libraries():
         "xrpl-docs",
         "xrpl-py",
         "xrpl-js",
+        "xaman-docs",
+        "joey-docs",
     ]
     assert [source.repo_url for source in DEFAULT_DOC_SOURCES] == [
         "https://github.com/XRPLF/xrpl-dev-portal.git",
         "https://github.com/XRPLF/xrpl-py.git",
         "https://github.com/XRPLF/xrpl.js.git",
+        "https://github.com/XRPL-Labs/Developer-Help-Center.git",
+        "",
     ]
     assert [source.path.name for source in DEFAULT_DOC_SOURCES] == [
         "xrpl-dev-portal",
         "xrpl-py",
         "xrpl.js",
+        "xaman-docs",
+        "joey-docs",
     ]
     xrpl_py = DEFAULT_DOC_SOURCES[1]
     assert ".py" in xrpl_py.file_suffixes

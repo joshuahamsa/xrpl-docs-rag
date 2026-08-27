@@ -11,6 +11,7 @@ from xrpl_rag.docs_source import (
     DEFAULT_DOC_SOURCES,
     DocsSource,
     ensure_docs_repo,
+    ensure_web_docs,
     iter_document_files,
 )
 from xrpl_rag.formatting import format_context, format_search_results
@@ -149,9 +150,17 @@ def _ingest_chunks(
     sources = _sources_for_ingest(config, docs_path)
 
     for source in sources:
-        repo_root = ensure_docs_repo(
-            source.path, update=update, repo_url=source.repo_url
-        )
+        if source.llms_txt_url:
+            repo_root = ensure_web_docs(
+                source.path,
+                llms_txt_url=source.llms_txt_url,
+                base_url=source.url_base,
+                update=update,
+            )
+        else:
+            repo_root = ensure_docs_repo(
+                source.path, update=update, repo_url=source.repo_url
+            )
         files = list(
             iter_document_files(
                 repo_root,
@@ -212,6 +221,7 @@ def _sources_for_ingest(
                 file_suffixes=source.file_suffixes,
                 include_parts=source.include_parts,
                 source_url_base=source.source_url_base,
+                llms_txt_url=source.llms_txt_url,
             )
         )
     return tuple(sources)

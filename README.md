@@ -73,6 +73,9 @@ Default sources:
 - xrpl.org docs: `https://github.com/XRPLF/xrpl-dev-portal.git`
 - xrpl-py docs and package docstrings: `https://github.com/XRPLF/xrpl-py.git`
 - xrpl.js docs: `https://github.com/XRPLF/xrpl.js.git`
+- Xaman developer docs: `https://github.com/XRPL-Labs/Developer-Help-Center.git`
+- Joey Wallet developer docs: mirrored from `https://docs.joeywallet.xyz/llms.txt`
+  (the site publishes a Markdown version of every page)
 
 Use an existing xrpl.org docs checkout without network updates:
 
@@ -88,6 +91,8 @@ Defaults:
 - xrpl.org docs checkout: `.cache/xrpl-dev-portal`
 - xrpl-py checkout: `.cache/xrpl-py`
 - xrpl.js checkout: `.cache/xrpl.js`
+- Xaman docs checkout: `.cache/xaman-docs`
+- Joey Wallet docs mirror: `.cache/joey-docs`
 - Vector DB: `.rag/chroma`
 - Collection: `xrpl_docs`
 - Embedding model: `sentence-transformers/all-MiniLM-L6-v2`
