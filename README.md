@@ -1,7 +1,8 @@
 # XRPL Docs RAG
 
 Local-first retrieval for XRP Ledger documentation. The CLI indexes xrpl.org source
-docs plus the XRPL Python and JavaScript library docs, then prints source-cited
+docs, the XRPL client libraries (Python, JavaScript, Java, Go), XLS standards,
+Xahau, and wallet developer docs (Xaman, Joey, GemWallet, Ledger), then prints source-cited
 context that you can hand to a local LLM.
 
 ## 🤖 Agents Read This
@@ -19,9 +20,10 @@ available for future sessions. Follow these steps exactly:
    ```
 
    `scripts/setup.sh` creates `.venv`, installs the package, builds the local
-   Chroma index (this clones three documentation repos and downloads a
-   sentence-transformers embedding model — expect several minutes and network
-   access), and installs a Claude Code skill at `~/.claude/skills/xrpl-docs`
+   Chroma index (this clones or mirrors a dozen documentation sources and
+   downloads a sentence-transformers embedding model — expect several minutes
+   and network access on the first run; later ingests are incremental and
+   only embed changed content), and installs a Claude Code skill at `~/.claude/skills/xrpl-docs`
    pointing at this checkout. If your harness is not Claude Code, pass
    `--no-skill` and instead register the equivalent instruction in your own
    persistent-context mechanism (rules file, memory, AGENTS.md, etc.): "Before
@@ -48,6 +50,8 @@ Usage notes for answering questions later:
   differently-phrased searches for broad questions.
 - `xrpl-rag context "<question>"` prints a larger LLM-ready context block.
 - Everything runs locally; no hosted LLM or API key is required.
+- To refresh the index later, re-run `.venv/bin/xrpl-rag ingest` — it is
+  incremental and only embeds new or changed content.
 
 ## Install
 
@@ -67,6 +71,12 @@ vector store:
 ```bash
 .venv/bin/xrpl-rag ingest
 ```
+
+Ingest is incremental: chunk IDs are content hashes, so re-running only embeds
+new or changed chunks and deletes chunks the sources no longer produce. A
+no-change re-ingest finishes in seconds, so it is cheap to run often (the first
+build still embeds everything). The command prints the breakdown, e.g.
+`Embedded 42 new chunks; 20468 unchanged, 17 removed.`
 
 Default sources:
 
@@ -91,7 +101,8 @@ Use an existing xrpl.org docs checkout without network updates:
 ```
 
 Passing `--docs-path` keeps the legacy single-source behavior and indexes only that
-checkout.
+checkout. In this mode stale chunks are not deleted, since the other default
+sources are not scanned.
 
 Defaults:
 
