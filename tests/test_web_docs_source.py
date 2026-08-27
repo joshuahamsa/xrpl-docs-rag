@@ -82,3 +82,32 @@ def test_default_doc_sources_include_wallet_docs():
     assert by_name["xaman-docs"].url_base == "https://docs.xaman.dev/"
     assert by_name["joey-docs"].llms_txt_url == "https://docs.joeywallet.xyz/llms.txt"
     assert by_name["joey-docs"].url_base == "https://docs.joeywallet.xyz/"
+
+
+def test_github_blob_url_base_keeps_full_path_and_suffix():
+    from xrpl_rag.parser import derive_source_url
+
+    url = derive_source_url(
+        "XLS-0020-nfts/README.md",
+        "https://github.com/XRPLF/XRPL-Standards/blob/master/",
+    )
+    assert url == (
+        "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0020-nfts/README.md"
+    )
+    docs_url = derive_source_url(
+        "docs/build-clio.md", "https://github.com/XRPLF/clio/blob/develop/"
+    )
+    assert docs_url == "https://github.com/XRPLF/clio/blob/develop/docs/build-clio.md"
+
+
+def test_dot_directories_are_skipped(tmp_path):
+    from xrpl_rag.docs_source import iter_document_files
+
+    keep = tmp_path / "XLS-0020-nfts" / "README.md"
+    skip = tmp_path / ".github" / "copilot-instructions.md"
+    skip2 = tmp_path / ".claude" / "skills" / "thing" / "SKILL.md"
+    for f in (keep, skip, skip2):
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text("# Doc", encoding="utf-8")
+
+    assert list(iter_document_files(tmp_path, {".md"})) == [keep]

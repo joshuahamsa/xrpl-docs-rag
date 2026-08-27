@@ -38,13 +38,20 @@ def test_ingest_indexes_all_default_doc_sources(monkeypatch, tmp_path):
                 "Transaction Methods\n===================\n\nPython transaction docs.",
                 encoding="utf-8",
             )
-        else:
+        elif source.name == "xrpl-js":
             page = root / "docs" / "classes" / "Client.html"
             page.parent.mkdir(parents=True)
             page.write_text(
                 "<html><body><h1>Class Client</h1>"
                 "<p>JavaScript client docs.</p></body></html>",
                 encoding="utf-8",
+            )
+        else:
+            subdir = source.include_parts[0] if source.include_parts else "guides"
+            page = root / subdir / f"{source.name}.md"
+            page.parent.mkdir(parents=True)
+            page.write_text(
+                f"# {source.name}\n\nDocs for {source.name}.", encoding="utf-8"
             )
 
     def fake_ensure(path, update=True, repo_url=None):
@@ -54,7 +61,10 @@ def test_ingest_indexes_all_default_doc_sources(monkeypatch, tmp_path):
         raise AssertionError(f"Unexpected docs source: {path}")
 
     def fake_ensure_web(path, llms_txt_url, base_url, update=True):
-        return roots["joey-docs"]
+        for source in DEFAULT_DOC_SOURCES:
+            if source.llms_txt_url == llms_txt_url:
+                return roots[source.name]
+        raise AssertionError(f"Unexpected web docs source: {llms_txt_url}")
 
     monkeypatch.setattr("xrpl_rag.cli.ensure_docs_repo", fake_ensure)
     monkeypatch.setattr("xrpl_rag.cli.ensure_web_docs", fake_ensure_web)
@@ -63,11 +73,20 @@ def test_ingest_indexes_all_default_doc_sources(monkeypatch, tmp_path):
     result = CliRunner().invoke(app, ["ingest"])
 
     assert result.exit_code == 0
-    assert "Indexed 5 chunks from 5 files across 5 sources." in result.output
-    assert {chunk.source_path for chunk in FakeStore.upserted_chunks} == {
+    total = len(DEFAULT_DOC_SOURCES)
+    assert (
+        f"Indexed {total} chunks from {total} files across {total} sources."
+        in result.output
+    )
+    expected = {
         "docs/concepts/accounts.md",
         "xrpl-py:docs/source/xrpl.transaction.rst",
         "xrpl-js:docs/classes/Client.html",
         "xaman-docs:js-ts-sdk/sdk.md",
         "joey-docs:overview/getting-started.md",
     }
+    for source in DEFAULT_DOC_SOURCES:
+        if source.name not in {"xrpl-docs", "xrpl-py", "xrpl-js", "xaman-docs", "joey-docs"}:
+            subdir = source.include_parts[0] if source.include_parts else "guides"
+            expected.add(f"{source.name}:{subdir}/{source.name}.md")
+    assert {chunk.source_path for chunk in FakeStore.upserted_chunks} == expected

@@ -35,27 +35,30 @@ def test_iter_markdown_files_filters_common_non_docs_dirs(tmp_path):
 
 
 def test_default_doc_sources_include_xrpl_python_and_javascript_libraries():
-    assert [source.name for source in DEFAULT_DOC_SOURCES] == [
+    by_name = {source.name: source for source in DEFAULT_DOC_SOURCES}
+    assert set(by_name) == {
         "xrpl-docs",
         "xrpl-py",
         "xrpl-js",
         "xaman-docs",
         "joey-docs",
-    ]
-    assert [source.repo_url for source in DEFAULT_DOC_SOURCES] == [
-        "https://github.com/XRPLF/xrpl-dev-portal.git",
-        "https://github.com/XRPLF/xrpl-py.git",
-        "https://github.com/XRPLF/xrpl.js.git",
-        "https://github.com/XRPL-Labs/Developer-Help-Center.git",
-        "",
-    ]
-    assert [source.path.name for source in DEFAULT_DOC_SOURCES] == [
-        "xrpl-dev-portal",
-        "xrpl-py",
-        "xrpl.js",
-        "xaman-docs",
-        "joey-docs",
-    ]
+        "xls-standards",
+        "xrpl4j",
+        "xrpl-go",
+        "clio",
+        "xahau-docs",
+        "gemwallet-docs",
+        "ledger-docs",
+    }
+    assert by_name["xrpl-docs"].repo_url.endswith("xrpl-dev-portal.git")
+    assert by_name["xrpl-py"].repo_url.endswith("xrpl-py.git")
+    assert by_name["xrpl-js"].repo_url.endswith("xrpl.js.git")
+    assert by_name["xls-standards"].url_base.startswith(
+        "https://github.com/XRPLF/XRPL-Standards/blob/"
+    )
+    assert by_name["xahau-docs"].url_base == "https://docs.xahau.network/"
+    assert by_name["gemwallet-docs"].include_parts == ("docs",)
+    assert by_name["ledger-docs"].llms_txt_url is not None
     xrpl_py = DEFAULT_DOC_SOURCES[1]
     assert ".py" in xrpl_py.file_suffixes
     assert xrpl_py.include_parts == ("docs", "xrpl")

@@ -14,6 +14,14 @@ XRPL_JS_REPO_URL = "https://github.com/XRPLF/xrpl.js.git"
 XAMAN_DOCS_REPO_URL = "https://github.com/XRPL-Labs/Developer-Help-Center.git"
 JOEY_DOCS_LLMS_TXT_URL = "https://docs.joeywallet.xyz/llms.txt"
 JOEY_DOCS_URL_BASE = "https://docs.joeywallet.xyz/"
+XLS_STANDARDS_REPO_URL = "https://github.com/XRPLF/XRPL-Standards.git"
+XRPL4J_REPO_URL = "https://github.com/XRPLF/xrpl4j.git"
+XRPL_GO_REPO_URL = "https://github.com/XRPLF/xrpl-go.git"
+CLIO_REPO_URL = "https://github.com/XRPLF/clio.git"
+XAHAU_DOCS_REPO_URL = "https://github.com/Xahau/Xahau-Docs.git"
+GEMWALLET_DOCS_REPO_URL = "https://github.com/GemWallet/gemwallet-website.git"
+LEDGER_DOCS_LLMS_TXT_URL = "https://developers.ledger.com/llms.txt"
+LEDGER_DOCS_URL_BASE = "https://developers.ledger.com/docs/"
 SKIP_DIRS = {".git", ".gitbook", ".next", ".venv", "assets", "node_modules", "vendor"}
 DOC_SUFFIXES = {".html", ".md", ".mdx", ".rst"}
 XRPL_DOC_SUFFIXES = frozenset({".md", ".mdx"})
@@ -78,6 +86,64 @@ DEFAULT_DOC_SOURCES = (
         prefix_source_path=True,
         file_suffixes=MARKDOWN_SUFFIXES,
         llms_txt_url=JOEY_DOCS_LLMS_TXT_URL,
+    ),
+    DocsSource(
+        name="xls-standards",
+        repo_url=XLS_STANDARDS_REPO_URL,
+        path=Path(".cache/xrpl-standards"),
+        url_base="https://github.com/XRPLF/XRPL-Standards/blob/master/",
+        prefix_source_path=True,
+        file_suffixes=MARKDOWN_SUFFIXES,
+    ),
+    DocsSource(
+        name="xrpl4j",
+        repo_url=XRPL4J_REPO_URL,
+        path=Path(".cache/xrpl4j"),
+        url_base="https://github.com/XRPLF/xrpl4j/blob/main/",
+        prefix_source_path=True,
+        file_suffixes=MARKDOWN_SUFFIXES,
+    ),
+    DocsSource(
+        name="xrpl-go",
+        repo_url=XRPL_GO_REPO_URL,
+        path=Path(".cache/xrpl-go"),
+        url_base="https://github.com/XRPLF/xrpl-go/blob/main/",
+        prefix_source_path=True,
+        file_suffixes=MARKDOWN_SUFFIXES,
+    ),
+    DocsSource(
+        name="clio",
+        repo_url=CLIO_REPO_URL,
+        path=Path(".cache/clio"),
+        url_base="https://github.com/XRPLF/clio/blob/develop/",
+        prefix_source_path=True,
+        file_suffixes=MARKDOWN_SUFFIXES,
+    ),
+    DocsSource(
+        name="xahau-docs",
+        repo_url=XAHAU_DOCS_REPO_URL,
+        path=Path(".cache/xahau-docs"),
+        url_base="https://docs.xahau.network/",
+        prefix_source_path=True,
+        file_suffixes=MARKDOWN_SUFFIXES,
+    ),
+    DocsSource(
+        name="gemwallet-docs",
+        repo_url=GEMWALLET_DOCS_REPO_URL,
+        path=Path(".cache/gemwallet-website"),
+        url_base="https://gemwallet.app/docs/",
+        prefix_source_path=True,
+        file_suffixes=frozenset({".md", ".mdx"}),
+        include_parts=("docs",),
+    ),
+    DocsSource(
+        name="ledger-docs",
+        repo_url="",
+        path=Path(".cache/ledger-docs"),
+        url_base=LEDGER_DOCS_URL_BASE,
+        prefix_source_path=True,
+        file_suffixes=MARKDOWN_SUFFIXES,
+        llms_txt_url=LEDGER_DOCS_LLMS_TXT_URL,
     ),
 )
 
@@ -174,4 +240,8 @@ def _is_included(path: Path, include_parts: tuple[str, ...]) -> bool:
 
 
 def _has_skipped_part(path: Path) -> bool:
-    return any(part in SKIP_DIRS for part in path.parts)
+    # Directory parts starting with "." (e.g. .github, .claude, .agents) hold
+    # repo tooling, not documentation.
+    return any(
+        part in SKIP_DIRS or part.startswith(".") for part in path.parts[:-1]
+    )

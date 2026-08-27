@@ -76,6 +76,13 @@ Default sources:
 - Xaman developer docs: `https://github.com/XRPL-Labs/Developer-Help-Center.git`
 - Joey Wallet developer docs: mirrored from `https://docs.joeywallet.xyz/llms.txt`
   (the site publishes a Markdown version of every page)
+- XLS standards & drafts: `https://github.com/XRPLF/XRPL-Standards.git`
+- xrpl4j (Java) docs: `https://github.com/XRPLF/xrpl4j.git`
+- xrpl-go docs: `https://github.com/XRPLF/xrpl-go.git`
+- Clio API server docs: `https://github.com/XRPLF/clio.git`
+- Xahau (Hooks) docs: `https://github.com/Xahau/Xahau-Docs.git`
+- GemWallet developer docs: `https://github.com/GemWallet/gemwallet-website.git`
+- Ledger developer docs: mirrored from `https://developers.ledger.com/llms.txt`
 
 Use an existing xrpl.org docs checkout without network updates:
 
@@ -93,6 +100,9 @@ Defaults:
 - xrpl.js checkout: `.cache/xrpl.js`
 - Xaman docs checkout: `.cache/xaman-docs`
 - Joey Wallet docs mirror: `.cache/joey-docs`
+- Other git sources: `.cache/xrpl-standards`, `.cache/xrpl4j`, `.cache/xrpl-go`,
+  `.cache/clio`, `.cache/xahau-docs`, `.cache/gemwallet-website`
+- Ledger docs mirror: `.cache/ledger-docs`
 - Vector DB: `.rag/chroma`
 - Collection: `xrpl_docs`
 - Embedding model: `sentence-transformers/all-MiniLM-L6-v2`

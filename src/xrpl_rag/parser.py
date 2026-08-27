@@ -93,6 +93,9 @@ def derive_docs_url(source_path: str) -> str:
 
 def derive_source_url(source_path: str, url_base: str) -> str:
     path = source_path
+    if "/blob/" in url_base:
+        # GitHub file links need the real path and suffix to resolve.
+        return f"{url_base.rstrip('/')}/{path.strip('/')}"
     if path.startswith("docs/"):
         path = path.removeprefix("docs/")
     path = re.sub(r"\.mdx?$", "", path)
