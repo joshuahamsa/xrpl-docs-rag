@@ -134,7 +134,9 @@ def local_path_for_doc_url(url: str, base_url: str, root: Path) -> Path:
 
 
 def _fetch_text(url: str) -> str:
-    with urllib.request.urlopen(url, timeout=30) as response:
+    # Some docs hosts reject urllib's default Python-urllib user agent.
+    request = urllib.request.Request(url, headers={"User-Agent": "xrpl-docs-rag/0.1"})
+    with urllib.request.urlopen(request, timeout=30) as response:
         return response.read().decode("utf-8")
 
 
